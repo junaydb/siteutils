@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 import os, os.path
@@ -11,7 +8,7 @@ def lazyfolio():
     pass
 
 
-@website.command()
+@lazyfolio.command()
 @click.argument(
     "path",
     type=click.Path(exists=True, file_okay=False),
@@ -66,4 +63,4 @@ export const components = { img: ImageModal };
 
 
 if __name__ == "__main__":
-    website()
+    lazyfolio()
