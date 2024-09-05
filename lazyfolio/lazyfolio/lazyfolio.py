@@ -1,6 +1,6 @@
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
-import os, os.path
+import os.path
 
 
 @click.group()
@@ -54,6 +54,10 @@ export const components = { img: ImageModal };
         if not append:
             file.write(mdx_template)
         for img_path in img_paths:
+            _, tail = os.path.split(img_path)
+            # Skip dot files
+            if tail[0] == ".":
+                continue
             file.write(f"![placeholder]({path}{img_path})\n")
 
     if append:
