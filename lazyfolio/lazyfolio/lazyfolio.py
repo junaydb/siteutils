@@ -1,6 +1,7 @@
 import click
 from click_option_group import optgroup, MutuallyExclusiveOptionGroup
 import os.path
+import re
 
 
 @click.group()
@@ -54,11 +55,16 @@ export const components = { img: ImageModal };
         if not append:
             file.write(mdx_template)
         for img_path in img_paths:
-            _, tail = os.path.split(img_path)
+            _, img_name = os.path.split(img_path)
             # Skip dot files
-            if tail[0] == ".":
+            if img_name[0] == ".":
                 continue
-            file.write(f"![placeholder]({path}{img_path})\n")
+            # Replace hypens and underscores with spaces and remove extension
+            img_name = re.sub("-|_", " ", img_name)
+            img_name = re.sub(r"\.[^.]*$", "", img_name)
+            # Capitalise first letter
+            img_name = img_name[0].upper() + img_name[1:]
+            file.write(f"![{img_name}]({path}{img_path})\n")
 
     if append:
         click.secho(f"appended to {append}", fg="green")
