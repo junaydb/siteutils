@@ -4,19 +4,30 @@ import re
 import shutil
 
 
-def write_md_img_links(dir, img_paths, file):
-    for img_path in img_paths:
-        # Skip dot files
-        if img_path[0] == ".":
-            continue
-        # Replace hypens and underscores with
-        img_name = re.sub("-|_", " ", img_path)
-        # Remove extension
-        img_name = re.sub(r"\.[^.]*$", "", img_name)
-        # Capitalise first letter
-        img_name = img_name[0].upper() + img_name[1:]
+def get_image_paths(dir):
+    """Get all file paths in the given directory (excluding dot files)."""
+    return [
+        f
+        for f in os.listdir(dir)
+        if os.path.isfile(os.path.join(dir, f)) and not f.startswith(".")
+    ]
 
-        file.write(f"![{img_name}]({dir}{img_path})\n")
+
+def write_md_img_links(dir, file):
+    """
+    Write all paths in the given directory as markdown image links.
+    File names are used as alt text.
+    """
+    paths = get_image_paths(dir)
+    for path in paths:
+        # Replace hypens and underscores with
+        alt_text = re.sub("-|_", " ", path)
+        # Remove extension
+        alt_text = re.sub(r"\.[^.]*$", "", alt_text)
+        # Capitalise first letter
+        alt_text = alt_text[0].upper() + alt_text[1:]
+
+        file.write(f"![{alt_text}]({dir}{path})\n")
 
 
 CONTEXT_SETTINGS = dict(max_content_width=120)
@@ -34,7 +45,8 @@ def markdown():
 
 @markdown.command()
 @click.argument(
-    "path",
+    "dir",
+    nargs=-1,
     type=click.Path(exists=True, file_okay=False),
 )
 @click.option(
@@ -55,14 +67,13 @@ def markdown():
     "--md",
     default=False,
     is_flag=True,
-    help="Output .md files",
+    help="Output .md files (instead of the default .mdx)",
 )
-def create_with_images(path, output, template, md):
-    """Create .md|.mdx file with all images from a directory as markdown links.
+def create_with_images(dir, output, template, md):
+    """Create .md|.mdx file with all images from one or more directories as markdown syntax.
 
-    PATH is the path to the directory of images.
+    DIR is the path to a directory of images. You can pass multiple directories (separated by spaces).
     """
-    img_paths = os.listdir(path)
     ext = ".md" if md else ".mdx"
     click.echo(f"Using {ext}")
 
@@ -73,30 +84,32 @@ def create_with_images(path, output, template, md):
                 shutil.copyfileobj(template_file, output_file)
                 click.secho(f"Copied '{template}' content to '{output}'", fg="green")
 
-        write_md_img_links(path, img_paths, output_file)
+        for d in dir:
+            write_md_img_links(d, output_file)
 
     click.secho(f"Generated {ext} file '{output}{ext}'", fg="green")
 
 
 @markdown.command()
 @click.argument(
-    "path",
+    "dir",
+    nargs=-1,
     type=click.Path(exists=True, file_okay=False),
 )
 @click.argument(
     "target",
     type=click.Path(writable=True),
 )
-def append_images(path, target):
-    """Append all images from a directory to a file in markdown syntax.
+def append_images(dir, target):
+    """Append all images from one or more directories to a file as markdown syntax.
 
-    PATH is the path to the directory of images.
+    DIR is the path to a directory of images. You can pass multiple directories (separated by spaces).
     TARGET is the file to append to.
     """
-    img_paths = os.listdir(path)
 
-    with click.open_file(target, "a") as file:
-        write_md_img_links(path, img_paths, file)
+    for d in dir:
+        with click.open_file(target, "a") as file:
+            write_md_img_links(d, file)
 
     click.secho(f"Appended images to '{target}'", fg="green")
 
