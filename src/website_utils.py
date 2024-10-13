@@ -23,11 +23,11 @@ CONTEXT_SETTINGS = dict(max_content_width=120)
 
 
 @click.group()
-def lazyfolio():
+def website_utils():
     pass
 
 
-@lazyfolio.group(context_settings=CONTEXT_SETTINGS)
+@website_utils.group(context_settings=CONTEXT_SETTINGS)
 def markdown():
     pass
 
@@ -102,4 +102,4 @@ def append_images(path, target):
 
 
 if __name__ == "__main__":
-    lazyfolio()
+    website_utils()
