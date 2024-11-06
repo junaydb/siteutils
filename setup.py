@@ -1,16 +1,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="website_utils",
+    name="siteutils",
     version="0.1.0",
     package_dir={"": "src"},
-    py_modules=["website_utils"],
+    py_modules=["siteutils"],
     install_requires=[
         "Click",
     ],
     entry_points={
         "console_scripts": [
-            "website-utils = website_utils:website_utils",
+            "siteutils = siteutils:siteutils",
         ],
     },
 )

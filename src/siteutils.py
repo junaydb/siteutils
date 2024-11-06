@@ -25,11 +25,11 @@ def edge_config_update_req(props):
 
 
 @click.group()
-def website_utils():
+def siteutils():
     pass
 
 
-@website_utils.command()
+@siteutils.command()
 @click.argument(
     "mode",
     type=click.Choice(["standard", "maintenance"], case_sensitive=False),
@@ -61,4 +61,4 @@ def mode(mode):
 
 
 if __name__ == "__main__":
-    website_utils()
+    siteutils()
