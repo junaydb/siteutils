@@ -42,7 +42,7 @@ def mode(mode):
 
     match mode:
         case "standard":
-            data = edge_config_update_req([{"key": "maintenance", "value": "0"}])
+            data = edge_config_update_req([{"key": "maintenance", "value": 0}])
             res = requests.patch(url, json=data, headers=headers)
             if res.ok:
                 click.secho("Site now in standard mode.", fg="green")
@@ -50,7 +50,7 @@ def mode(mode):
             else:
                 print(res.json())
         case "maintenance":
-            data = edge_config_update_req([{"key": "maintenance", "value": "1"}])
+            data = edge_config_update_req([{"key": "maintenance", "value": 1}])
             res = requests.patch(url, json=data, headers=headers)
             if res.ok:
                 click.secho("Site now in maintenance mode.", fg="yellow")
