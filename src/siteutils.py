@@ -2,6 +2,7 @@ import click
 import os
 import requests
 import json
+import subprocess
 
 try:
     VERCEL_ACCESS_TOKEN = os.environ["VERCEL_ACCESS_TOKEN"]
@@ -13,6 +14,19 @@ try:
     VERCEL_EDGE_CONFIG_ID = os.environ["VERCEL_EDGE_CONFIG_ID"]
 except:
     click.secho("$VERCEL_EDGE_CONFIG_ID not found.", fg="red")
+    exit(1)
+
+try:
+    SITE_GIT_URL = os.environ["SITE_GIT_URL"]
+except:
+    click.secho("$SITE_GIT_URL not found.", fg="red")
+    exit(1)
+
+
+try:
+    POSTS_DIR = os.environ["POSTS_DIR"]
+except:
+    click.secho("$POSTS_DIR not found.", fg="red")
     exit(1)
 
 
@@ -58,6 +72,48 @@ def mode(mode):
             else:
                 print(res.json())
         # More modes can go here
+
+
+@siteutils.command()
+@click.argument(
+    "target",
+    type=click.Choice(["main", "preview"], case_sensitive=False),
+)
+def deploy(target):
+    match target:
+        case "main":
+            subprocess.run(
+                f"""cd {POSTS_DIR}\\
+                    && git add .\\
+                    && git commit -m '(automated): update posts'\\
+                    && git push\\
+                    && git clone {SITE_GIT_URL}\\
+                    && cd website\\
+                    && git checkout staging\\
+                    && git submodule update --init --recursive --remote\\
+                    && git add .\\
+                    && git commit -m '(automated): update posts'\\
+                    && git checkout main\\
+                    && git merge staging\\
+                    && git push""",
+                shell=True,
+            )
+            subprocess.run("sudo rm -r website", shell=True)
+        case "preview":
+            subprocess.run(
+                f"""cd {POSTS_DIR}\\
+                    && git add .\\
+                    && git commit -m '(automated): update posts'\\
+                    && git push\\
+                    && git clone --depth=1 --branch staging  {SITE_GIT_URL}\\
+                    && cd website\\
+                    && git submodule update --init --recursive --remote\\
+                    && git add .\\
+                    && git commit -m '(automated): update posts'\\
+                    && git push""",
+                shell=True,
+            )
+            subprocess.run("sudo rm -r website", shell=True)
 
 
 if __name__ == "__main__":
