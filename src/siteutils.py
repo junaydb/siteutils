@@ -3,6 +3,7 @@ import os
 import requests
 import json
 import subprocess
+import signal
 
 try:
     VERCEL_ACCESS_TOKEN = os.environ["VERCEL_ACCESS_TOKEN"]
@@ -21,7 +22,6 @@ try:
 except:
     click.secho("$SITE_GIT_URL not found.", fg="red")
     exit(1)
-
 
 try:
     POSTS_DIR = os.environ["POSTS_DIR"]
@@ -114,6 +114,30 @@ def deploy(target):
                 shell=True,
             )
             subprocess.run("sudo rm -r website", shell=True)
+
+
+@siteutils.command()
+def dev():
+    result = subprocess.run(
+        f"""cd ~\\
+            && cd website\\
+            && git checkout staging\\
+            && pnpm dev --host""",
+        shell=True,
+    )
+
+    if result.returncode != 0:
+        subprocess.run(
+            f"""cd ~\\
+                && git clone {SITE_GIT_URL}\\
+                && cd website\\
+                && git checkout staging\\
+                && rmdir ./src/markdown/posts\\
+                && ln -s {POSTS_DIR} ./src/markdown\\
+                && npm install\\
+                && pnpm dev --host""",
+            shell=True,
+        )
 
 
 if __name__ == "__main__":
