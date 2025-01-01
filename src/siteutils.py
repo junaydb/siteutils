@@ -80,13 +80,18 @@ def mode(mode):
     type=click.Choice(["main", "preview"], case_sensitive=False),
 )
 def deploy(target):
+    subprocess.run(
+        f"""cd {POSTS_DIR}\\
+            && git add .\\
+            && git commit -m '(automated): update posts'\\
+            && git push""",
+        shell=True,
+    )
+
     match target:
         case "main":
-            subprocess.run(
+            result = subprocess.run(
                 f"""cd {POSTS_DIR}\\
-                    && git add .\\
-                    && git commit -m '(automated): update posts'\\
-                    && git push\\
                     && git clone {SITE_GIT_URL}\\
                     && cd website\\
                     && git checkout staging\\
@@ -98,14 +103,22 @@ def deploy(target):
                     && git push""",
                 shell=True,
             )
+
+            if result.returncode != 0:
+                result = subprocess.run(
+                    f"""cd {POSTS_DIR}\\
+                        && cd website\\
+                        && git checkout main\\
+                        && git merge staging\\
+                        && git push""",
+                    shell=True,
+                )
+
             subprocess.run("sudo rm -r website", shell=True)
         case "preview":
             subprocess.run(
                 f"""cd {POSTS_DIR}\\
-                    && git add .\\
-                    && git commit -m '(automated): update posts'\\
-                    && git push\\
-                    && git clone --depth=1 --branch staging  {SITE_GIT_URL}\\
+                    && git clone --depth=1 --branch staging {SITE_GIT_URL}\\
                     && cd website\\
                     && git submodule update --init --recursive --remote\\
                     && git add .\\
