@@ -121,10 +121,6 @@ def dev():
     result = subprocess.run(
         f"""cd ~\\
             && cd website\\
-            && git checkout staging\\
-            && rm ./src/markdown/posts\\
-            && git pull\\
-            && ln -s {POSTS_DIR} ./src/markdown\\
             && pnpm dev --host""",
         shell=True,
     )
