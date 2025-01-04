@@ -98,6 +98,7 @@ def deploy(target):
                     && git submodule update --init --recursive --remote\\
                     && git add .\\
                     && git commit -m '(automated): update posts'\\
+                    && git push\\
                     && git checkout main\\
                     && git merge staging\\
                     && git push""",
