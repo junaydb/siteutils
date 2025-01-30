@@ -24,9 +24,9 @@ except:
     exit(1)
 
 try:
-    POSTS_DIR = os.environ["POSTS_DIR"]
+    CONTENT_DIR = os.environ["CONTENT_DIR"]
 except:
-    click.secho("$POSTS_DIR not found.", fg="red")
+    click.secho("$CONTENT_DIR not found.", fg="red")
     exit(1)
 
 
@@ -80,10 +80,12 @@ def mode(mode):
     type=click.Choice(["main", "preview"], case_sensitive=False),
 )
 def deploy(target):
+    """Deploy posts to main or staging."""
+
     subprocess.run(
-        f"""cd {POSTS_DIR}\\
+        f"""cd {CONTENT_DIR}\\
             && git add .\\
-            && git commit -m '(automated): update posts'\\
+            && git commit -m '(automated): update content'\\
             && git push""",
         shell=True,
     )
@@ -91,13 +93,13 @@ def deploy(target):
     match target:
         case "main":
             result = subprocess.run(
-                f"""cd {POSTS_DIR}\\
+                f"""cd {CONTENT_DIR}\\
                     && git clone {SITE_GIT_URL}\\
                     && cd website\\
                     && git checkout staging\\
                     && git submodule update --init --recursive --remote\\
                     && git add .\\
-                    && git commit -m '(automated): update posts'\\
+                    && git commit -m '(automated): update content'\\
                     && git push\\
                     && git checkout main\\
                     && git merge staging\\
@@ -107,7 +109,7 @@ def deploy(target):
 
             if result.returncode != 0:
                 result = subprocess.run(
-                    f"""cd {POSTS_DIR}\\
+                    f"""cd {CONTENT_DIR}\\
                         && cd website\\
                         && git checkout main\\
                         && git merge staging\\
@@ -118,12 +120,12 @@ def deploy(target):
             subprocess.run("sudo rm -r website", shell=True)
         case "preview":
             subprocess.run(
-                f"""cd {POSTS_DIR}\\
+                f"""cd {CONTENT_DIR}\\
                     && git clone --depth=1 --branch staging {SITE_GIT_URL}\\
                     && cd website\\
                     && git submodule update --init --recursive --remote\\
                     && git add .\\
-                    && git commit -m '(automated): update posts'\\
+                    && git commit -m '(automated): update content'\\
                     && git push""",
                 shell=True,
             )
@@ -132,6 +134,8 @@ def deploy(target):
 
 @siteutils.command()
 def dev():
+    """Preview posts with live updates locally."""
+
     result = subprocess.run(
         f"""cd ~\\
             && cd website\\
@@ -145,8 +149,8 @@ def dev():
                 && git clone {SITE_GIT_URL}\\
                 && cd website\\
                 && git checkout staging\\
-                && rmdir ./src/markdown/posts\\
-                && ln -s {POSTS_DIR} ./src/markdown\\
+                && rmdir ./src/markdown/content\\
+                && ln -s {CONTENT_DIR} ./src/markdown\\
                 && npm install\\
                 && pnpm dev --host""",
             shell=True,
